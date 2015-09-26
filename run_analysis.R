@@ -40,23 +40,52 @@ subject <- rbind(subject_train, subject_test)
 # Merge into 1 data.frame
 merged_df <- cbind(X, Y, subject)
 
-print(dim(merged_df)) # Expect 10299 x 563
+# print(dim(merged_df)) # Expect 10299 x 563
 
 # Remove unneeded raw data frames from memory
 rm(X_train, Y_train, subject_train, X_test, Y_test, subject_test, X, Y, subject)
 
 ## Step 2
-# Find features involving mean or std
+# Extract features involving mean or std
 features <- read.table("UCI HAR Dataset/features.txt",
                        colClasses = c("numeric", "character"))
 indices <- grepl("mean\\(|std\\(", features[,2])
-print(features[indices,]) # expect 66 features
+# print(features[indices,]) # expect 66 features
 
 meanstd_df <- merged_df[,indices]
 
+# Remove unneeded data.frame
+rm(merged_df)
+
 ## Step 3
-# Replace Y column with strings from activity_labels.txt
+# Replace Y column integers with strings from activity_labels.txt
+
+f <- function(d) {
+    if (d==1) return("walking")
+    if (d==2) return("walking upstairs")
+    if (d==3) return("walking downstairs")
+    if (d==4) return("sitting")
+    if (d==5) return("standing")
+    if (d==6) return("laying")
+}
+
+desc_activity_df <- meanstd_df
+desc_activity_df[, "V1.1"] <- as.factor(sapply(meanstd_df[, "V1.1"], f))
+
+# Remove unneeded data.frame
+rm(meanstd_df)
 
 ## Step 4
+# Label the features
+names(desc_activity_df) <- c(features[indices,2], "activity", "subject")
+
 
 ## Step 5
+# Create tidy summary data set
+s <- split(desc_activity_df[, !names(desc_activity_df) %in% c("activity", "subject")],
+           list(desc_activity_df$activity, desc_activity_df$subject))
+tidy_df <- t(data.frame(lapply(s, colMeans)))
+
+# Save tidy data set to file
+write.table(tidy_df, file = "tidy_data.txt", row.names = FALSE)
+
