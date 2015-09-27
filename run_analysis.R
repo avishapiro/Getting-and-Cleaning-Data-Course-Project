@@ -112,7 +112,7 @@ tidy_df <- data.frame(t(data.frame(lapply(s, colMeans))))
 rm(s)
 
 # Save tidy data set to file
-write.table(tidy_df, file = "tidy_data.txt", row.names = FALSE)
+write.table(tidy_df, file = "tidy_data.txt", row.names = FALSE, quote = FALSE)
 
 print("Step 5 finished")
 print("Tidy data set has been written to tidy_data.txt.")
